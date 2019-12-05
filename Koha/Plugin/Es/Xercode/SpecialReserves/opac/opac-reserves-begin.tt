@@ -1,0 +1,66 @@
+[% USE Koha %]
+[% USE KohaDates %]
+[% USE Price %]
+[% INCLUDE 'doc-head-open.inc' %]
+<title>[% IF ( LibraryNameTitle ) %][% LibraryNameTitle %][% ELSE %]Koha online[% END %] catalog &rsaquo; Your fines and charges</title>
+[% INCLUDE 'doc-head-close.inc' %]
+[% BLOCK cssinclude %]
+    <link rel="stylesheet" type="text/css" href="[% interface %]/[% theme %]/css/datatables.css" />
+[% END %]
+<style type="text/css">
+    textarea {
+        height: 8em;
+        width: 50em;
+    }
+    ul {
+        list-style: none;
+    }
+    .bold {
+        font-weight: bold;
+    }
+</style>
+</head>
+[% INCLUDE 'bodytag.inc' bodyid='opac-account' bodyclass='scrollto' %]
+[% INCLUDE 'masthead.inc' %]
+
+<div class="main">
+    <ul class="breadcrumb">
+        <li><a href="/cgi-bin/koha/opac-main.pl">Home</a> <span class="divider">&rsaquo;</span></li>
+        <li><a href="#">Placing a hold</a></li>
+    </ul>
+
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <div class="span2">
+                <div id="navigation">
+                    [% INCLUDE 'navigation.inc' IsPatronPage=1 %]
+                </div>
+            </div>
+            <div class="span10">
+                <div id="useraccount" class="maincontent">
+                    <div>
+                        [% IF ( SENT ) %]
+                            <p>[% msg %]</p>
+                        [% ELSIF ( error ) %]
+                            <p>[% msg %]</p>
+                        [% ELSE %]                       
+                            <form method="post" action="/reserve/opac-special-reserves.pl">
+                                <p><label>[% txt_request %]</label></p>
+                                <ul><li><div><span class="bold">[% bibliodata.title %]</span> [% bibliodata.author %]</div></li>
+                                </ul>
+                                <p><label for"txt_comment">[% txt_comment %]</label></p>
+                                <textarea name="comment"></textarea></p>
+                                <input type="hidden" name="biblionumber" value="[% biblionumber | html %]"/>
+                                <input type="hidden" name="op" value="request"/>
+                                <input type="submit" class="btn" value="[% txt_button | html %]" />
+                            </form>
+                        [% END %]
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+[% INCLUDE 'opac-bottom.inc' %]
+[% BLOCK jsinclude %][% END %]

@@ -1,0 +1,110 @@
+[% USE KohaDates %]
+[% INCLUDE 'doc-head-open.inc' %]
+ <title>Koha: Special Reserves Plugin: Configuration</title>
+[% INCLUDE 'doc-head-close.inc' %]
+<style type="text/css">
+    #doc3 textarea {
+        height: 9em;
+        width: 70em;
+        vertical-align: top;
+        margin-left: 20px;
+    }
+    #doc3 input[type=text]{
+        margin-left: 20px;
+        width: 819px;
+    }
+    #doc3 input[type=submit] {
+        display: block;
+        margin-top: 17px;
+    }
+    #doc3 label {
+        margin-top: 17px;
+        display: block;
+    }
+</style>
+</head>
+<body>
+[% INCLUDE 'header.inc' %]
+[% INCLUDE 'cat-search.inc' %]
+
+<div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Home</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugins</a> &rsaquo; Opac Special Reserves &rsaquo; Configuration
+
+<div id="doc3">
+    <img src="[% PLUGIN_PATH %]/logo.png"/>
+    <h3>Koha: Special Reserves Plugin: Configuration</h3>
+
+    <form method="get">
+        <input type="hidden" name="class" value="[% CLASS %]"/>
+        <input type="hidden" name="method" value="[% METHOD %]"/>
+
+        
+            
+                <label for="enable_special_reserves">Enable OPAC special reserves: </label>
+                <select name="enable_special_reserves">
+                    [% IF enable_special_reserves == 'No' %]
+                        <option value="No" selected="selected">No</option>
+                    [% ELSE %]
+                        <option value="No">No</option>
+                    [% END %]
+
+                    [% IF enable_special_reserves == 'Yes' %]
+                        <option value="Yes" selected="selected">Yes</option>
+                    [% ELSE %]
+                        <option value="Yes">Yes</option>
+                    [% END %]
+                </select>
+            
+            
+                <label for="key_value">Item or Biblioitem configuration, in the form key.field = value where key is biblioitems or items: </label>
+                <input type="text" name="key_value" value="[% key_value %]" />
+            
+            
+                <label for="txt_cantbereserved">Error text when cannot be reserved:</label>
+                <textarea name="txt_cantbereserved">[% txt_cantbereserved %]</textarea>
+            
+            
+                <label for="txt_cantsent">Error text when an email cannot be sent:</label>
+                <textarea name="txt_cantsent">[% txt_cantsent %]</textarea>
+            
+            
+                <label for="txt_sent">Confirmation text when an email is sent:</label>
+                <textarea name="txt_sent">[% txt_sent %]</textarea>
+            
+            
+                <label for="txt_mailtextlib">Text of the mail message to the library:</label>
+                <textarea name="txt_mailtextlib">[% txt_mailtextlib %]</textarea>
+            
+            
+                <label for="txt_mailtextpatron">Text of the mail message to the patron:</label>
+                <textarea name="txt_mailtextpatron">[% txt_mailtextpatron %]</textarea>
+            
+            
+                <label for="txt_button">Request submission button text:</label>
+                <input type="text" name="txt_button" value="[% txt_button %]" />
+            
+            
+                <label for="txt_request">Transaction start text:</label>
+                <textarea name="txt_request">[% txt_request %]</textarea>
+            
+            
+                <label for="txt_comment">Text for the comment box:</label>
+                <textarea name="txt_comment">[% txt_comment %]</textarea>
+            
+            <input type="hidden" name="save" value="1" />
+
+            <input type="submit" value="Save configuration" />
+        
+    </form>
+
+    <hr/>
+
+    <p>
+        <h5>Upgrade status</h5>
+        [% IF last_upgraded %]
+            Plugin was last upgraded on this system on [% last_upgraded | $KohaDates with_hours => 1 %]
+        [% ELSE %]
+            Plugin has never been upgraded.
+        [% END %]
+    </p>
+
+[% INCLUDE 'intranet-bottom.inc' %]
