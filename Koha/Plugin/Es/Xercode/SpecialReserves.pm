@@ -4,6 +4,7 @@ use Modern::Perl;
 
 use base qw(Koha::Plugins::Base);
 
+use Koha::DateUtils qw( dt_from_string );
 use C4::Context;
 use C4::Auth;
 use Carp;
