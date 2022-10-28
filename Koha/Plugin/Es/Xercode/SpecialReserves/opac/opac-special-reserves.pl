@@ -23,8 +23,8 @@ use Modern::Perl;
 
 use CGI;
 
-use C4::Auth;
-use C4::Output;
+use C4::Auth qw( get_template_and_user );
+use C4::Output qw( output_html_with_http_headers );
 use C4::Context;
 use Cwd            qw( abs_path );
 use File::Basename qw( dirname );
@@ -46,6 +46,7 @@ my $thisPlugin_enabled = Koha::Plugins::Handler->run( { class => 'Koha::Plugin::
 my $biblio = Koha::Biblios->find( $biblionumber );
 my $record = C4::Biblio::GetMarcBiblio({ biblionumber => $biblio->id });
 my $bibliodata;
+
 $bibliodata->{title} = $record->subfield('245',"a")." ".$record->subfield('245',"b");
 $bibliodata->{author} = ( $record->subfield('245',"c") ) ? $record->subfield('245',"c") : "";
 
@@ -115,12 +116,12 @@ if ( $op eq 'request' ){
     push @texts, $$translations{txt_mailtextpatron};
     push @emails, $branch_email;
     push @emails, $tokens->{borrower}->{email};
+    
     my $i = 0;
-
     foreach my $text (@texts){
         next unless $emails[$i];
-        foreach my $key (keys %$tokens){
-            foreach my $subkey (keys $tokens->{$key}){
+        foreach my $key (keys %{$tokens}){            
+            foreach my $subkey (keys %{$tokens->{$key}}){
                 $text =~ s/<<$key\.$subkey>>/$tokens->{$key}->{$subkey}/g;
             }
         }
@@ -130,25 +131,19 @@ if ( $op eq 'request' ){
             $letter->{subject} =~ s|\n?(.*)\n?|$1|;
             $letter->{content} =~ s/<SUBJECT>$letter->{subject}<END_SUBJECT>//;
         }
-        $letter->{content} .= "<p>$comment</p>" if ( $comment );
-        my $message = Koha::Email->new();
-        my %mail  = $message->create_message_headers({
-            to          => $emails[$i],
-            from        => C4::Context->preference('KohaAdminEmailAddress'),
-            subject     => Encode::encode( "UTF-8", "" . $letter->{subject} ),
-            message     => _wrap_html( Encode::encode( "UTF-8", "" . $letter->{content} ),
-                            Encode::encode( "UTF-8", "" . $letter->{subject} ) ),
-            contenttype => 'text/html; charset="utf-8"',
-        });
+        
+        $letter->{content} .= "<hr/><p>$comment</p>" if ( $comment );
 
-        unless ( Mail::Sendmail::sendmail(%mail) ) {
-            carp "Error sending mail: $Mail::Sendmail::error\n";
+        my $sent = sendEmail ($emails[$i], $letter->{subject}, $letter->{content});
+
+        unless ( $sent ) {
             $template->param( error => 1 );
             $template->param( msg => $$translations{txt_cantsent} );
         } else {
             $template->param( SENT => "1" );
             $template->param( msg => $$translations{txt_sent} );
         }
+
         $i++;
     }
 }
@@ -171,4 +166,29 @@ $content
 </body>
 </html>
 EOS
+}
+
+sub sendEmail {
+    my ($mails, $subject, $content) = @_;
+
+    my $params = {
+        to => $mails,,
+        from     => C4::Context->preference('KohaAdminEmailAddress'),
+        subject  => $subject,
+        contenttype => 'text/html; charset="utf-8"'
+    };
+
+    my $email = Koha::Email->create($params);
+    $email->html_body( _wrap_html( $content, $subject ) );
+
+    my $smtp_server = Koha::SMTP::Servers->get_default;
+
+    try {
+        $email->send_or_die({ transport => $smtp_server->transport });
+        return 1;
+    }
+    catch {
+        print "Se ha producido un error durante el envío del correo\n";
+        return 0;
+    };
 }

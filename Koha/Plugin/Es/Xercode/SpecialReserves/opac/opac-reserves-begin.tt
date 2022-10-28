@@ -1,42 +1,45 @@
+[% USE raw %]
+[% USE Asset %]
 [% USE Koha %]
 [% USE KohaDates %]
-[% USE Price %]
+[% USE AuthorisedValues %]
+[% USE AdditionalContents %]
+[% SET OpacNavKoha = AdditionalContents.get( location => "OpacNav", lang => lang, library => logged_in_user.branchcode, blocktitle => 0 ) %]
+[% SET OpacNavBottomKoha = AdditionalContents.get( location => "OpacNavBottom", lang => lang, library => logged_in_user.branchcode, blocktitle => 0 ) %]
 [% INCLUDE 'doc-head-open.inc' %]
-<title>[% IF ( LibraryNameTitle ) %][% LibraryNameTitle %][% ELSE %]Koha online[% END %] catalog &rsaquo; Your fines and charges</title>
+<title>Placing a special hold &rsaquo; [% IF ( LibraryNameTitle ) %][% LibraryNameTitle | html %][% ELSE %]Koha online[% END %] catalog</title>
 [% INCLUDE 'doc-head-close.inc' %]
 [% BLOCK cssinclude %]
-    <link rel="stylesheet" type="text/css" href="[% interface %]/[% theme %]/css/datatables.css" />
+    [% Asset.css("css/datatables.css") | $raw %]
 [% END %]
-<style type="text/css">
-    textarea {
-        height: 8em;
-        width: 50em;
-    }
-    ul {
-        list-style: none;
-    }
-    .bold {
-        font-weight: bold;
-    }
-</style>
 </head>
-[% INCLUDE 'bodytag.inc' bodyid='opac-account' bodyclass='scrollto' %]
+
+[% INCLUDE 'bodytag.inc' bodyid='opac-specialholds' %]
 [% INCLUDE 'masthead.inc' %]
 
 <div class="main">
-    <ul class="breadcrumb">
-        <li><a href="/cgi-bin/koha/opac-main.pl">Home</a> <span class="divider">&rsaquo;</span></li>
-        <li><a href="#">Placing a hold</a></li>
-    </ul>
+    <nav id="breadcrumbs" aria-label="Breadcrumb" class="breadcrumbs">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="/cgi-bin/koha/opac-main.pl">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="/cgi-bin/koha/opac-user.pl">[% INCLUDE 'patron-title.inc' patron = logged_in_user %]</a>
+            </li>
+            <li class="breadcrumb-item active">
+                <a href="#" aria-current="page">Placing a hold</a>
+            </li>
+        </ol>
+    </nav> <!-- /#breadcrumbs -->
 
     <div class="container-fluid">
-        <div class="row-fluid">
-            <div class="span2">
+        <div class="row">
+            <div class="col col-lg-2 order-2 order-lg-1">
                 <div id="navigation">
                     [% INCLUDE 'navigation.inc' IsPatronPage=1 %]
                 </div>
             </div>
-            <div class="span10">
+            <div class="col-md-12 col-lg-10 order-1">
                 <div id="useraccount" class="maincontent">
                     <div>
                         [% IF ( SENT ) %]
@@ -44,15 +47,15 @@
                         [% ELSIF ( error ) %]
                             <p>[% msg %]</p>
                         [% ELSE %]                       
-                            <form method="post" action="/reserve/opac-special-reserves.pl">
+                            <form method="post" action="/specialreserve.pl">
                                 <p><label>[% txt_request %]</label></p>
                                 <ul><li><div><span class="bold">[% bibliodata.title %]</span> [% bibliodata.author %]</div></li>
                                 </ul>
                                 <p><label for"txt_comment">[% txt_comment %]</label></p>
-                                <textarea name="comment"></textarea></p>
+                                <textarea id="txt_comment" name="comment" class="form-control"></textarea></p>
                                 <input type="hidden" name="biblionumber" value="[% biblionumber | html %]"/>
                                 <input type="hidden" name="op" value="request"/>
-                                <input type="submit" class="btn" value="[% txt_button | html %]" />
+                                <input type="submit" value="[% txt_button | html %]" class="btn btn-primary"/>
                             </form>
                         [% END %]
                     </div>
@@ -63,4 +66,11 @@
 </div>
 
 [% INCLUDE 'opac-bottom.inc' %]
-[% BLOCK jsinclude %][% END %]
+[% BLOCK jsinclude %]
+    [% INCLUDE 'datatables.inc' %]
+    <script>
+        $( document ).ready(function() {
+            
+        });
+    </script>
+[% END %]

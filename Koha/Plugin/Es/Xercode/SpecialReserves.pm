@@ -4,19 +4,30 @@ use Modern::Perl;
 
 use base qw(Koha::Plugins::Base);
 
-use Koha::DateUtils qw( dt_from_string );
+use utf8;
 use C4::Context;
+use C4::Biblio;
 use C4::Auth;
 use Carp;
+use JSON;
 
-our $VERSION = "1.2.3";
+use constant ANYONE => 2;
+
+BEGIN {
+    use Config;
+    use C4::Context;
+
+    my $pluginsdir  = C4::Context->config('pluginsdir');
+}
+
+our $VERSION = "2.0.0";
 
 our $metadata = {
-    name            => 'Special Reserves',
-    author          => 'Xercode',
+    name            => 'Koha Plugin Special Reserves',
+    author          => 'Xercode Media Software S.L.',
     date_authored   => '2019-06-14',
-    date_updated    => "2019-10-07",
-    minimum_version => '17.11.00.000',
+    date_updated    => "2022-10-28",
+    minimum_version => '18.05',
     maximum_version => undef,
     version         => $VERSION,
     description     => 'This plugin provides a special reserve on a particular bibliografic record'
@@ -33,10 +44,42 @@ sub new {
     return $self;
 }
 
+sub _GetStatus {
+    my ( $self, $biblionumber, $lang ) = @_;
+    
+    my $biblio = Koha::Biblios->find( $biblionumber );
+
+    my $status = 0;
+    my $txt_button_reserve = "";
+    if ($biblio){
+        foreach (split(',', $self->retrieve_data('txt_button_reserve'))){
+            if ($_ =~ /^${lang}/){
+                ($txt_button_reserve) = $_ =~ /.*\:(.*)/;
+            }
+        }
+        $status = $self->can_be_reserved($biblio);
+    }
+
+    return ($status, $txt_button_reserve);
+}
+
 sub tool {
     my ( $self ) = @_;
     my $cgi = $self->{'cgi'};
     $self->configure();
+}
+
+sub opac_js {
+    my ( $self ) = @_;
+
+    my $output = "";
+    if ($self->is_enabled){
+        # MAIN JS
+        my $mainjs = $self->mbf_read('js/specialreserves.js');
+        $output .= "<script>\n".$mainjs."\n</script>";
+    }
+
+    return $output;
 }
 
 sub configure {
@@ -48,9 +91,9 @@ sub configure {
 
         ## Grab the values we already have for our settings, if any exist
         $template->param(
-            enable_special_reserves => $self->retrieve_data('enable_special_reserves'),
             last_upgraded           => $self->retrieve_data('last_upgraded'),
             key_value               => $self->retrieve_data('key_value'),
+            txt_button_reserve      => $self->retrieve_data('txt_button_reserve'),
             txt_cantbereserved      => $self->retrieve_data('txt_cantbereserved'),
             txt_cantsent            => $self->retrieve_data('txt_cantsent'),
             txt_mailtextlib         => $self->retrieve_data('txt_mailtextlib'),
@@ -66,9 +109,9 @@ sub configure {
     else {
         $self->store_data(
             {
-                enable_special_reserves => $cgi->param('enable_special_reserves'),
                 last_configured_by      => C4::Context->userenv->{'number'},
                 key_value               => $cgi->param('key_value'),
+                txt_button_reserve      => $cgi->param('txt_button_reserve'),
                 txt_cantbereserved      => $cgi->param('txt_cantbereserved'),
                 txt_cantsent            => $cgi->param('txt_cantsent'),
                 txt_mailtextlib         => $cgi->param('txt_mailtextlib'),
@@ -105,7 +148,7 @@ sub uninstall() {
 sub opac_special_reserves {
     my ( $self, $args ) = @_;
 
-    return $self->retrieve_data('enable_special_reserves') eq 'Yes';
+    return $self->is_enabled;
 }
 
 sub get_key_value {
@@ -113,6 +156,7 @@ sub get_key_value {
     my $dbh = C4::Context->dbh;
 
     my $pluginvalue = $self->retrieve_data('key_value');
+    
     if ( $pluginvalue !~ m/(^\w{5,}\.\w{1,}\=\w{1,})/){
         carp($self->{class}." - Error in key value format");
         return;
