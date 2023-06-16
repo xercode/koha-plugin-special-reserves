@@ -40,11 +40,6 @@
             </div>
 
             <div class="form-group">
-                <label for="txt_cantbereserved">Error text when cannot be reserved:</label>
-                <textarea name="txt_cantbereserved" id="txt_cantbereserved" class="form-control" rows="5">[% txt_cantbereserved %]</textarea>
-            </div>
-
-            <div class="form-group">
                 <label for="txt_cantsent">Error text when an email cannot be sent:</label>
                 <textarea name="txt_cantsent" id="txt_cantsent" class="form-control" rows="5">[% txt_cantsent %]</textarea>
             </div>
