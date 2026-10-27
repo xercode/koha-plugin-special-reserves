@@ -4,11 +4,11 @@ This is a plugin for Koha that send an email to a library to reserve an item tha
 
 ### Requirements
 
-- Koha mininum version: 18.05
+- Koha minimum version: 26.05
 
 ### Installation
 
-Download the package file koha-plugin-special-reserves.kpz
+Download the package file koha-plugin-special-reserves_v.2.0.2.kpz from the release
 
 Login to Koha Admin and go to the plugin screen
 
@@ -18,8 +18,8 @@ Upload Plugin
 
 You have to add two ScriptAliases:
 
-    ScriptAlias /canspecialreserve.pl "/path/to/Koha/Plugin/Es/Xercode/SpecialReserves/opac/can-special-reserves.pl"
-    ScriptAlias /specialreserve.pl "/path/to/Koha/Plugin/Es/Xercode/SpecialReserves/opac/opac-special-reserves.pl"
+    ScriptAlias /reserve/can-special-reserves.pl "/path/to/Koha/Plugin/Es/Xercode/SpecialReserves/opac/can-special-reserves.pl"
+    ScriptAlias /reserve/opac-special-reserves.pl "/path/to/Koha/Plugin/Es/Xercode/SpecialReserves/opac/opac-special-reserves.pl"
 
 into the OPAC Virtualhost
 
