@@ -34,6 +34,7 @@ use Carp;
 use Encode qw(encode);
 use MIME::QuotedPrint;
 use Koha::Plugins::Handler;
+use Try::Tiny;
 use HTML::Entities;
 
 my $cgi = new CGI;
@@ -44,16 +45,17 @@ my $pluginDir = dirname(abs_path($0));
 
 my $thisPlugin_enabled = Koha::Plugins::Handler->run( { class => 'Koha::Plugin::Es::Xercode::SpecialReserves', method => 'opac_special_reserves' } );
 my $biblio = Koha::Biblios->find( $biblionumber );
-my $record = C4::Biblio::GetMarcBiblio({ biblionumber => $biblio->id });
-my $bibliodata;
-
-$bibliodata->{title} = $record->subfield('245',"a")." ".$record->subfield('245',"b");
-$bibliodata->{author} = ( $record->subfield('245',"c") ) ? $record->subfield('245',"c") : "";
 
 if ( !$biblionumber || !$thisPlugin_enabled || !$biblio ) {
     print $cgi->redirect("/cgi-bin/koha/errors/404.pl");
     exit;
 }
+
+my $record = $biblio->metadata->record;
+my $bibliodata;
+
+$bibliodata->{title} = $record->subfield('245',"a")." ".$record->subfield('245',"b");
+$bibliodata->{author} = ( $record->subfield('245',"c") ) ? $record->subfield('245',"c") : "";
 
 my ( $template, $borrowernumber, $cookie ) = get_template_and_user(
     {

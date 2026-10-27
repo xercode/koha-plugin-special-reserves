@@ -8,6 +8,7 @@ use utf8;
 use C4::Context;
 use C4::Biblio;
 use C4::Auth;
+use Koha::DateUtils qw( dt_from_string );
 use Carp;
 use JSON;
 
@@ -20,14 +21,14 @@ BEGIN {
     my $pluginsdir  = C4::Context->config('pluginsdir');
 }
 
-our $VERSION = "2.0.0";
+our $VERSION = "2.0.1";
 
 our $metadata = {
     name            => 'Koha Plugin Special Reserves',
     author          => 'Xercode Media Software S.L.',
     date_authored   => '2019-06-14',
-    date_updated    => "2022-10-28",
-    minimum_version => '18.05',
+    date_updated    => "2026-10-27",
+    minimum_version => '26.05',
     maximum_version => undef,
     version         => $VERSION,
     description     => 'This plugin provides a special reserve on a particular bibliografic record'
@@ -110,16 +111,16 @@ sub configure {
         $self->store_data(
             {
                 last_configured_by      => C4::Context->userenv->{'number'},
-                key_value               => $cgi->param('key_value'),
-                txt_button_reserve      => $cgi->param('txt_button_reserve'),
-                txt_cantbereserved      => $cgi->param('txt_cantbereserved'),
-                txt_cantsent            => $cgi->param('txt_cantsent'),
-                txt_mailtextlib         => $cgi->param('txt_mailtextlib'),
-                txt_sent                => $cgi->param('txt_sent'),
-                txt_button              => $cgi->param('txt_button'),
-                txt_request             => $cgi->param('txt_request'),
-                txt_comment             => $cgi->param('txt_comment'),
-                txt_mailtextpatron      => $cgi->param('txt_mailtextpatron'),
+                key_value               => scalar $cgi->param('key_value'),
+                txt_button_reserve      => scalar $cgi->param('txt_button_reserve'),
+                txt_cantbereserved      => scalar $cgi->param('txt_cantbereserved'),
+                txt_cantsent            => scalar $cgi->param('txt_cantsent'),
+                txt_mailtextlib         => scalar $cgi->param('txt_mailtextlib'),
+                txt_sent                => scalar $cgi->param('txt_sent'),
+                txt_button              => scalar $cgi->param('txt_button'),
+                txt_request             => scalar $cgi->param('txt_request'),
+                txt_comment             => scalar $cgi->param('txt_comment'),
+                txt_mailtextpatron      => scalar $cgi->param('txt_mailtextpatron'),
             }
         );
         $self->go_home();
