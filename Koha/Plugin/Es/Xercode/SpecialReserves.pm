@@ -21,7 +21,7 @@ BEGIN {
     my $pluginsdir  = C4::Context->config('pluginsdir');
 }
 
-our $VERSION = "2.0.1";
+our $VERSION = "2.0.2";
 
 our $metadata = {
     name            => 'Koha Plugin Special Reserves',
